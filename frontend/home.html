@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion.Pro - Home Principal</title>
+    <title>Gestion.Pro - Dashboard Principal</title>
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
@@ -114,8 +114,12 @@
             margin: 5px 0;
         }
         
+        .kpi-card small {
+            color: #ccc;
+        }
+        
         .kpi-card.alert {
-            border-color: #ff4444; 
+            border-color: #ff4444; /* Rojo de alerta */
             box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
         }
         
@@ -160,8 +164,42 @@
         .action-card.neon-purple { border-left: 5px solid #b388ff; }
         .action-card.neon-purple h3 { color: #b388ff; text-shadow: 0 0 8px rgba(179, 136, 255, 0.7); }
         
-        /* --- Estilos de la Tabla (Mantenidos, aunque ocultaremos la tabla de usuarios en Home) --- */
-        #users-table-container { display: none; } /* Ocultamos la tabla de usuarios en la vista principal */
+        /* --- Estilos para la Tabla de Usuarios --- */
+        #users-table-container { 
+            margin-top: 30px; 
+            padding: 20px; 
+            background: #1a1f26;
+            border-radius: 8px;
+        }
+        #users-table {
+            border-collapse: collapse;
+            font-size: 0.9em;
+            text-align: left;
+            margin-top: 15px;
+            width: 100%; /* Asegurar que la tabla ocupe todo el espacio */
+        }
+
+        #users-table thead tr {
+            background-color: var(--secondary-color);
+            color: var(--bg-color);
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #users-table th, #users-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        #users-table tbody tr:nth-of-type(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        #users-table tbody tr:hover {
+            background-color: rgba(0, 230, 118, 0.1);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -180,11 +218,12 @@
     <div class="sidebar" id="sidebar-nav">
         <nav>
             <ul>
-                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="home.html">Home</a></li> 
                 <li><a href="inventario.html">Inventario</a></li> 
+                <li><a href="ventas.html">Gestión de Ventas</a></li> 
                 <li><a href="perfil.html">Perfil</a></li> 
                 <li><a href="ajustes.html">Ajustes</a></li>
-                <li><a href="#">Reportes</a></li>
+                <li><a href="reportes.html">Reportes</a></li>
                 <li><a href="inicio.html">Cerrar Sesión</a></li> 
             </ul>
         </nav>
@@ -204,11 +243,7 @@
                 <p class="value">28</p>
                 <small>Artículos agotándose</small>
             </div>
-            <div class="kpi-card">
-                <h2>Clientes (30 días)</h2>
-                <p class="value">150</p>
-                <small>Ver reporte completo</small>
-            </div>
+            
         </div>
 
         <h2 style="margin-top: 40px;">GESTIÓN RÁPIDA DE TIENDA</h2>
@@ -220,42 +255,94 @@
                 <p>Agregar, editar y eliminar artículos de ropa.</p>
             </a>
 
-            <a href="#" class="action-card neon-blue">
-                <h3>🛒 Punto de Venta (POS)</h3>
+            <a href="ventas.html" class="action-card neon-blue">
+                <h3>🛒 Ventas</h3>
                 <p>Registrar ventas y transacciones diarias.</p>
             </a>
 
-            <a href="#" class="action-card neon-cyan">
-                <h3>👤 Gestión de Clientes</h3>
-                <p>Administrar historial y datos de clientes.</p>
-            </a>
+
             
-            <a href="#" class="action-card neon-purple">
+            <a href="reportes.html" class="action-card neon-purple"> 
                 <h3>📊 Reportes Financieros</h3>
                 <p>Ver ganancias, pérdidas e informes de inventario.</p>
             </a>
         </div>
         
+        <h2 style="margin-top: 60px;">ADMINISTRACIÓN DE USUARIOS</h2>
         <div id="users-table-container">
-            </div>
+            <table id="users-table" width="100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    </tbody>
+            </table>
+            <p id="loading-message">Cargando usuarios...</p>
+        </div>
     </main>
 
     <script>
         // JavaScript para el menú hamburguesa
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.getElementById('sidebar-nav');
+        const usersTableBody = document.getElementById('users-table-body'); // Nuevo ID para el tbody
+        const loadingMessage = document.getElementById('loading-message');
 
-        // Lógica para abrir/cerrar el menú
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('is-active');
             sidebar.classList.toggle('is-open');
         });
         
-        // Lógica para cerrar el menú al hacer clic fuera
         document.addEventListener('click', (event) => {
             if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
                 hamburger.classList.remove('is-active');
                 sidebar.classList.remove('is-open');
+            }
+        });
+        
+        // CARGAR USUARIOS AL INICIAR EL DASHBOARD (IPC)
+        document.addEventListener('DOMContentLoaded', async () => {
+            
+            // Ocultar la tabla hasta que se carguen los datos
+            usersTableBody.style.display = 'none'; 
+            loadingMessage.style.display = 'block';
+
+            // Revisa si la API está definida y si getUsers existe
+            if (typeof window.api !== 'undefined' && typeof window.api.getUsers === 'function') {
+                try {
+                    const result = await window.api.getUsers();
+                    
+                    loadingMessage.style.display = 'none'; // Oculta el mensaje de carga
+                    usersTableBody.style.display = 'table-row-group'; // Muestra el tbody
+
+                    if (result.success && result.users.length > 0) {
+                        usersTableBody.innerHTML = ''; 
+                        result.users.forEach(user => {
+                            const row = usersTableBody.insertRow();
+                            row.insertCell().textContent = user.id;
+                            row.insertCell().textContent = user.username;
+                            row.insertCell().textContent = user.role;
+                        });
+                    } else if (result.success && result.users.length === 0) {
+                        usersTableBody.innerHTML = '<tr><td colspan="3">No hay usuarios registrados.</td></tr>';
+                    } else {
+                        usersTableBody.innerHTML = `<tr><td colspan="3">Error al cargar: ${result.message}</td></tr>`;
+                    }
+                } catch (error) {
+                    usersTableBody.innerHTML = ''; // Limpia cualquier cosa si hay un error IPC
+                    loadingMessage.textContent = 'Error fatal al comunicar con la DB.';
+                    loadingMessage.style.display = 'block';
+                    console.error("Error IPC al obtener usuarios:", error);
+                }
+            } else {
+                usersTableBody.innerHTML = '';
+                loadingMessage.textContent = 'Error: API de comunicación no cargada. (Verifica preload.js)';
+                loadingMessage.style.display = 'block';
+                console.error("API de usuarios no disponible. Asegúrate de que preload.js está configurado.");
             }
         });
     </script>

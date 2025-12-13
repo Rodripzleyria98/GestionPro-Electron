@@ -47,12 +47,11 @@
             to { transform: translate(-500px, -500px) scale(3); }
         }
         .animated-background {
-            /* Copia aquí el box-shadow de las partículas si lo deseas para el movimiento */
             animation: moveBackground 60s linear infinite; 
             transform: scale(3);
         }
 
-        /* --- Header y Hamburguesa --- */
+        /* --- Header y Hamburguesa (Necesario para el Menú) --- */
         header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
         .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
         .hamburger { width: 30px; height: 20px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; z-index: 12; }
@@ -61,7 +60,7 @@
         .hamburger.is-active span:nth-child(2) { opacity: 0; }
         .hamburger.is-active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
         
-        /* --- Sidebar --- */
+        /* --- Sidebar (Menú) --- */
         .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background-color: var(--bg-color); border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); transition: right 0.4s ease-in-out; padding-top: 80px; z-index: 11; }
         .sidebar.is-open { right: 0; }
         .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
@@ -165,7 +164,7 @@
         .action-card.neon-purple { border-left: 5px solid #b388ff; }
         .action-card.neon-purple h3 { color: #b388ff; text-shadow: 0 0 8px rgba(179, 136, 255, 0.7); }
         
-        /* --- Estilos para la Tabla de Usuarios (Opcional, pero incluido) --- */
+        /* --- Estilos para la Tabla de Usuarios --- */
         #users-table-container { 
             margin-top: 30px; 
             padding: 20px; 
@@ -218,11 +217,14 @@
     <div class="sidebar" id="sidebar-nav">
         <nav>
             <ul>
-                <li><a href="dashboard.html">Dashboard</a></li> 
-                <li><a href="inventario.html">Inventario</a></li> <li><a href="perfil.html">Perfil</a></li> 
+                <li><a href="home.html">Home</a></li> 
+                <li><a href="inventario.html">Inventario</a></li> 
+                
+                <li><a href="ventas.html">Gestión de Ventas</a></li> 
+                
+                <li><a href="perfil.html">Perfil</a></li> 
                 <li><a href="ajustes.html">Ajustes</a></li>
-                <li><a href="#">Reportes</a></li>
-                <li><a href="index.html">Cerrar Sesión</a></li> 
+                <li><a href="reportes.html">Reportes</a></li> <li><a href="inicio.html">Cerrar Sesión</a></li> 
             </ul>
         </nav>
     </div>
@@ -241,11 +243,6 @@
                 <p class="value">28</p>
                 <small>Artículos agotándose</small>
             </div>
-            <div class="kpi-card">
-                <h2>Clientes (30 días)</h2>
-                <p class="value">150</p>
-                <small>Ver reporte completo</small>
-            </div>
         </div>
 
         <h2 style="margin-top: 40px;">GESTIÓN RÁPIDA DE TIENDA</h2>
@@ -257,17 +254,12 @@
                 <p>Agregar, editar y eliminar artículos de ropa.</p>
             </a>
 
-            <a href="#" class="action-card neon-blue">
-                <h3>🛒 Punto de Venta (POS)</h3>
+            <a href="ventas.html" class="action-card neon-blue">
+                <h3>🛒 Ventas</h3>
                 <p>Registrar ventas y transacciones diarias.</p>
             </a>
 
-            <a href="#" class="action-card neon-cyan">
-                <h3>👤 Gestión de Clientes</h3>
-                <p>Administrar historial y datos de clientes.</p>
-            </a>
-            
-            <a href="#" class="action-card neon-purple">
+            <a href="reportes.html" class="action-card neon-purple"> 
                 <h3>📊 Reportes Financieros</h3>
                 <p>Ver ganancias, pérdidas e informes de inventario.</p>
             </a>
@@ -284,9 +276,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <p id="loading-message">Cargando usuarios...</p>
                     </tbody>
             </table>
+            <p id="loading-message">Cargando usuarios...</p>
         </div>
     </main>
 
@@ -306,19 +298,22 @@
                 sidebar.classList.remove('is-open');
             }
         });
-        //CARGAR USUARIOS AL INICIAR EL DASHBOARD (IPC)
+        
+        // CARGAR USUARIOS AL INICIAR EL DASHBOARD (IPC)
         document.addEventListener('DOMContentLoaded', async () => {
             const tableBody = document.querySelector('#users-table tbody');
             const loadingMessage = document.getElementById('loading-message');
             
+            // Aseguramos que la tabla esté vacía antes de cualquier acción
+            tableBody.innerHTML = '';
+            
+            // Revisa si la API está definida y si getUsers existe (previene errores si preload falla)
             if (typeof window.api !== 'undefined' && typeof window.api.getUsers === 'function') {
                 try {
                     const result = await window.api.getUsers();
                     loadingMessage.style.display = 'none'; // Oculta el mensaje de carga
 
                     if (result.success && result.users.length > 0) {
-                        // Limpia el contenido antes de añadir filas
-                        tableBody.innerHTML = ''; 
                         result.users.forEach(user => {
                             const row = tableBody.insertRow();
                             row.insertCell().textContent = user.id;
@@ -332,10 +327,12 @@
                     }
                 } catch (error) {
                     loadingMessage.textContent = 'Error fatal al comunicar con la DB.';
+                    loadingMessage.style.display = 'block';
                     console.error("Error IPC al obtener usuarios:", error);
                 }
             } else {
                 loadingMessage.textContent = 'Error: API de comunicación no cargada. (Verifica preload.js)';
+                loadingMessage.style.display = 'block';
                 console.error("API de usuarios no disponible. Asegúrate de que preload.js está configurado.");
             }
         });

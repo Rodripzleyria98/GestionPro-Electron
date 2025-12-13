@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion.Pro - Gestión de Ventas</title>
+    
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+    ">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables CSS para colores futuristas */
+        :root {
+            --bg-color: #0d1117; /* Azul oscuro casi negro */
+            --primary-color: #00e676; /* Verde neón brillante */
+            --secondary-color: #00b0ff; /* Azul cian brillante */
+            --text-color: #e0e0e0; /* Gris claro */
+            --border-color: #30363d; /* Gris oscuro para bordes */
+            --glow-effect: 0 0 8px rgba(0, 230, 118, 0.7); /* Resplandor verde */
+            --box-shadow-focus: 0 0 10px rgba(0, 176, 255, 0.5); /* Sombra azul al enfocar */
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Header y Hamburguesa --- */
+        header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
+        .hamburger { width: 30px; height: 20px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; z-index: 12; }
+        .hamburger span { display: block; height: 2px; width: 100%; background: var(--secondary-color); border-radius: 5px; transition: all 0.3s ease-in-out; box-shadow: var(--glow-effect); }
+        .hamburger.is-active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .hamburger.is-active span:nth-child(2) { opacity: 0; }
+        .hamburger.is-active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+        
+        /* --- Sidebar (Menú) --- */
+        .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background-color: var(--bg-color); border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); transition: right 0.4s ease-in-out; padding-top: 80px; z-index: 11; }
+        .sidebar.is-open { right: 0; }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar nav ul li a { display: block; padding: 15px 20px; color: var(--text-color); text-decoration: none; font-size: 1.1em; transition: background-color 0.3s ease, color 0.3s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar nav ul li a:hover { background-color: rgba(0, 230, 118, 0.1); color: var(--primary-color); text-shadow: 0 0 5px rgba(0, 230, 118, 0.5); }
+        
+        .main-content-area { padding: 40px; flex-grow: 1; overflow-y: auto; }
+        .main-content-area h1 {
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: var(--glow-effect);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* --- Estilos de Ventas Específicos --- */
+        .ventas-container { display: flex; gap: 20px; padding: 0; flex-grow: 1; }
+        .panel { 
+            background-color: #1a1f26; 
+            padding: 25px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+            height: fit-content;
+        }
+        .search-panel { flex: 1; max-width: 400px; min-height: 400px; }
+        .cart-panel { flex: 2; display: flex; flex-direction: column; }
+        
+        .cart-panel h2, .search-panel h2 { 
+            color: var(--secondary-color); 
+            margin-top: 0; 
+            border-bottom: 1px solid rgba(0, 176, 255, 0.2); 
+            padding-bottom: 10px; 
+        }
+
+        #search-input, #quantity-input { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            box-sizing: border-box;
+            border: 1px solid var(--border-color); 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            border-radius: 5px;
+        }
+        #search-input:focus, #quantity-input:focus { border-color: var(--secondary-color); box-shadow: var(--box-shadow-focus); outline: none; }
+        
+        /* Botón de Agregar */
+        #add-to-cart-btn { 
+            background-color: #ffc107; 
+            color: var(--bg-color); 
+            padding: 12px; 
+            width: 100%; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        #add-to-cart-btn:hover { opacity: 0.9; }
+
+        /* Tabla de Carrito */
+        #cart-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+        #cart-table th, #cart-table td { 
+            padding: 10px; 
+            border-bottom: 1px solid var(--border-color); 
+            text-align: left; 
+        }
+        #cart-table th { 
+            background-color: var(--secondary-color); 
+            color: var(--bg-color); 
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Resumen Total */
+        .total-summary { 
+            margin-top: 20px; 
+            text-align: right; 
+            font-size: 1.5em; 
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold; 
+            color: var(--primary-color); 
+            text-shadow: var(--glow-effect);
+        }
+        
+        /* Botón de Venta */
+        .btn-process { 
+            background-color: var(--primary-color); 
+            color: var(--bg-color); 
+            padding: 15px; 
+            width: 100%; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: box-shadow 0.3s; 
+            margin-top: 10px; 
+        }
+        .btn-process:hover { box-shadow: 0 0 15px rgba(0, 230, 118, 0.9); }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="logo">Gestion.Pro</div>
+        <div class="hamburger" id="hamburger-menu"><span></span><span></span><span></span></div>
+    </header>
+
+    <div class="sidebar" id="sidebar-nav">
+        <nav>
+            <ul>
+                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="inventario.html">Inventario</a></li> 
+                
+                <li><a href="ventas.html">Gestión de Ventas</a></li> 
+                
+                <li><a href="perfil.html">Perfil</a></li> 
+                <li><a href="ajustes.html">Ajustes</a></li>
+                <li><a href="reportes.html">Reportes</a></li>
+                <li><a href="inicio.html">Cerrar Sesión</a></li> 
+            </ul>
+        </nav>
+    </div>
+    
+    <main class="main-content-area">
+        <h1>🛒 PUNTO DE VENTA (POS)</h1>
+        <div class="ventas-container">
+            
+            <div class="panel search-panel">
+                <h2>Buscar Producto</h2>
+                <input type="text" id="search-input" placeholder="Código, Nombre o Categoría">
+                
+                <div id="product-info">
+                    </div>
+                
+                <label for="quantity-input" style="margin-top: 15px;">Cantidad:</label>
+                <input type="number" id="quantity-input" value="1" min="1">
+                <button id="add-to-cart-btn">Agregar al Carrito</button>
+            </div>
+            
+            <div class="panel cart-panel">
+                <h2>Carrito de Compras</h2>
+                <div style="overflow-y: auto; flex-grow: 1;">
+                    <table id="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Código</th>
+                                <th>Cant.</th>
+                                <th>Precio Unit.</th>
+                                <th>Subtotal</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-items">
+                            </tbody>
+                    </table>
+                </div>
+                <div class="total-summary">
+                    Total: $<span id="cart-total">0.00</span>
+                </div>
+                <button class="btn-process" id="process-sale-btn">FINALIZAR VENTA</button>
+            </div>
+            
+        </div>
+    </main>
+    
+    <script>
+        // Declaraciones de elementos (incluyendo hamburguesa)
+        const searchInput = document.getElementById('search-input');
+        const productInfo = document.getElementById('product-info');
+        const quantityInput = document.getElementById('quantity-input');
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        const cartItems = document.getElementById('cart-items');
+        const cartTotalSpan = document.getElementById('cart-total');
+        const processSaleBtn = document.getElementById('process-sale-btn');
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.getElementById('sidebar-nav');
+        
+        let cart = []; 
+        let selectedProduct = null;
+
+        // --- LÓGICA DE NAVEGACIÓN HAMBURGUESA ---
+        if (hamburger && sidebar) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('is-active');
+                sidebar.classList.toggle('is-open');
+            });
+            document.addEventListener('click', (event) => {
+                if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
+                    hamburger.classList.remove('is-active');
+                    sidebar.classList.remove('is-open');
+                }
+            });
+        }
+        
+        // I. Búsqueda de Productos
+        searchInput.addEventListener('input', async () => {
+            const query = searchInput.value.trim();
+            if (query.length < 1) {
+                productInfo.innerHTML = '';
+                selectedProduct = null;
+                return;
+            }
+            
+            try {
+                const product = await window.api.searchProduct(query); 
+            
+                if (product) {
+                    selectedProduct = product;
+                    productInfo.innerHTML = `
+                        <p>Nombre: <strong>${product.nombre}</strong></p>
+                        <p>Stock Disponible: <strong>${product.stock}</strong></p>
+                        <p>Precio: <strong>$${product.precio.toFixed(2)}</strong></p>
+                    `;
+                    quantityInput.max = product.stock;
+                } else {
+                    selectedProduct = null;
+                    productInfo.innerHTML = '<p style="color: #ff4444;">Producto no encontrado.</p>';
+                    quantityInput.max = 1;
+                }
+            } catch (error) {
+                console.error("Error en la búsqueda IPC:", error);
+                productInfo.innerHTML = '<p style="color: #ff4444;">Error al consultar la base de datos.</p>';
+                selectedProduct = null;
+            }
+        });
+        
+        // II. Renderizar Carrito y Total
+        function renderCart() {
+            cartItems.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                
+                const row = cartItems.insertRow();
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.code}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>$${subtotal.toFixed(2)}</td>
+                    <td><button onclick="removeFromCart(${index})" style="background-color: #ff3333; color: white; border: none; padding: 5px; border-radius: 3px; cursor: pointer;">X</button></td>
+                `;
+            });
+            
+            cartTotalSpan.textContent = total.toFixed(2);
+        }
+        
+        // III. Agregar al Carrito
+        addToCartBtn.addEventListener('click', () => {
+            if (!selectedProduct) {
+                alert('Busca y selecciona un producto primero.');
+                return;
+            }
+            
+            const quantity = parseInt(quantityInput.value);
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('La cantidad debe ser un número positivo.');
+                return;
+            }
+
+            const existingItem = cart.find(item => item.productId === selectedProduct.id);
+            const totalRequired = quantity + (existingItem ? existingItem.quantity : 0);
+
+            if (totalRequired > selectedProduct.stock) {
+                alert(`Stock insuficiente. Solo quedan ${selectedProduct.stock} unidades en total.`);
+                return;
+            }
+            
+            if (existingItem) {
+                existingItem.quantity = totalRequired;
+            } else {
+                cart.push({
+                    productId: selectedProduct.id,
+                    name: selectedProduct.nombre,
+                    code: selectedProduct.codigo,
+                    price: selectedProduct.precio,
+                    quantity: quantity
+                });
+            }
+
+            searchInput.value = '';
+            quantityInput.value = 1;
+            productInfo.innerHTML = '';
+            selectedProduct = null;
+            renderCart();
+        });
+        
+        // IV. Remover del Carrito
+        window.removeFromCart = function(index) {
+            cart.splice(index, 1);
+            renderCart();
+        };
+
+        // V. Procesar Venta
+        processSaleBtn.addEventListener('click', async () => {
+            if (cart.length === 0) {
+                alert('El carrito está vacío. Agregue productos para finalizar la venta.');
+                return;
+            }
+
+            if (!confirm(`¿Confirmar la venta por un total de $${cartTotalSpan.textContent}? Esta acción actualizará el stock.`)) {
+                return;
+            }
+
+            const saleData = {
+                items: cart.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                }))
+            };
+
+            const result = await window.api.processSale(saleData); 
+
+            if (result.success) {
+                alert(`Venta finalizada con éxito. Total: $${result.total.toFixed(2)}. Stock actualizado.`);
+                cart = [];
+                renderCart();
+            } else {
+                alert(`Error al procesar la venta: ${result.message}`);
+            }
+        });
+
+        // Inicializar y enfocar en la búsqueda
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCart();
+            searchInput.focus(); 
+        });
+    </script>
+</body>
+</html>
