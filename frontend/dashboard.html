@@ -306,11 +306,7 @@
                 sidebar.classList.remove('is-open');
             }
         });
-
-        // -----------------------------------------------------------------
-        // LÓGICA PARA CARGAR USUARIOS AL INICIAR EL DASHBOARD (IPC)
-        // -----------------------------------------------------------------
-        
+        //CARGAR USUARIOS AL INICIAR EL DASHBOARD (IPC)
         document.addEventListener('DOMContentLoaded', async () => {
             const tableBody = document.querySelector('#users-table tbody');
             const loadingMessage = document.getElementById('loading-message');

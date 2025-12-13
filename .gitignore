@@ -15,3 +15,11 @@ gestionpro.db
 
 # Módulos específicos de desarrollo
 .vscode/
+# ... (otras exclusiones)
+
+# Archivos de la base de datos SQLite
+gestionpro.db
+*.sqlite
+*.sqlite3
+*.db-shm 
+*.db-wal

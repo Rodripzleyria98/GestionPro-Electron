@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion.Pro - Inventario</title>
+    
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+    ">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables y Estilos Globales (SIN CAMBIOS) */
+        :root {
+            --bg-color: #0d1117; 
+            --primary-color: #00e676; 
+            --secondary-color: #00b0ff; 
+            --text-color: #e0e0e0; 
+            --border-color: #30363d; 
+            --glow-effect: 0 0 8px rgba(0, 230, 118, 0.7); 
+            --box-shadow-focus: 0 0 10px rgba(0, 176, 255, 0.5); 
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Resto de Estilos CSS (Sin cambios) */
+        .animated-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; background-color: var(--bg-color); }
+        @keyframes moveBackground { from { transform: translate(0, 0) scale(3); } to { transform: translate(-500px, -500px) scale(3); } }
+        .animated-background { animation: moveBackground 60s linear infinite; transform: scale(3); }
+        header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
+        .hamburger { width: 30px; height: 20px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; z-index: 12; }
+        .hamburger span { display: block; height: 2px; width: 100%; background: var(--secondary-color); border-radius: 5px; transition: all 0.3s ease-in-out; box-shadow: var(--glow-effect); }
+        .hamburger.is-active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .hamburger.is-active span:nth-child(2) { opacity: 0; }
+        .hamburger.is-active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+        .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background-color: var(--bg-color); border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); transition: right 0.4s ease-in-out; padding-top: 80px; z-index: 11; }
+        .sidebar.is-open { right: 0; }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar nav ul li a { display: block; padding: 15px 20px; color: var(--text-color); text-decoration: none; font-size: 1.1em; transition: background-color 0.3s ease, color 0.3s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar nav ul li a:hover { background-color: rgba(0, 230, 118, 0.1); color: var(--primary-color); text-shadow: 0 0 5px rgba(0, 230, 118, 0.5); }
+        
+        .main-content-area { 
+            position: relative; 
+            z-index: 1; 
+            padding: 40px; 
+            flex-grow: 1;
+            overflow-y: auto; 
+        }
+        .main-content-area h1 {
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: var(--glow-effect);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .crud-container { display: flex; gap: 30px; margin-bottom: 30px; }
+        .form-card, .query-card {
+            background-color: #1a1f26;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            flex-shrink: 0;
+            height: fit-content;
+            position: relative; 
+            z-index: 2; 
+        }
+        .form-card h2, .query-card h2 { color: var(--secondary-color); margin-top: 0; border-bottom: 1px solid rgba(0, 176, 255, 0.2); padding-bottom: 10px; }
+        .form-card label, .query-card label { display: block; margin-top: 15px; margin-bottom: 5px; color: var(--text-color); font-weight: 600; }
+        .form-card input, .form-card select, .query-card input {
+            width: 100%; padding: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); border-radius: 5px; box-sizing: border-box; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-card input:focus, .form-card select:focus, .query-card input:focus { border-color: var(--secondary-color); box-shadow: var(--box-shadow-focus); outline: none; }
+        .form-actions { display: flex; gap: 10px; margin-top: 25px; }
+
+        .btn-action { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 700; transition: transform 0.2s, box-shadow 0.3s, background-color 0.3s; flex-grow: 1; }
+        .btn-save { background-color: var(--primary-color); color: var(--bg-color); box-shadow: var(--glow-effect); }
+        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 0 15px rgba(0, 230, 118, 0.9); }
+        .btn-cancel { background-color: #555; color: var(--text-color); }
+        .btn-cancel:hover { background-color: #777; }
+        .btn-query { background-color: #ffc107; color: var(--bg-color); }
+        .btn-query:hover { opacity: 0.9; }
+
+        .table-container { flex-grow: 1; overflow-x: auto; }
+        .inventory-table { width: 100%; border-collapse: collapse; }
+        .inventory-table th, .inventory-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .inventory-table th { background-color: var(--secondary-color); color: var(--bg-color); font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
+        .inventory-table tbody tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.05); }
+        .inventory-table tbody tr:hover { background-color: rgba(0, 176, 255, 0.1); cursor: pointer; }
+        .btn-table-action { padding: 5px 10px; margin: 0 5px; font-size: 0.8em; border-radius: 3px; cursor: pointer; transition: opacity 0.3s; }
+        .btn-edit { background-color: var(--secondary-color); color: var(--bg-color); }
+        .btn-delete { background-color: #ff3333; color: var(--bg-color); }
+        .btn-edit:hover, .btn-delete:hover { opacity: 0.8; }
+        #status-message { margin-top: 20px; padding: 15px; border-radius: 5px; display: none; font-weight: 600; }
+        .success { background-color: rgba(0, 230, 118, 0.2); color: var(--primary-color); border: 1px solid var(--primary-color); }
+        .error { background-color: rgba(255, 51, 51, 0.2); color: #ff3333; border: 1px solid #ff3333; }
+        
+        #stock-details {
+            background-color: #2b2b3a; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 15px;
+            border-left: 5px solid var(--primary-color);
+            display: none;
+        }
+        #stock-details p { margin: 5px 0; font-size: 1.1em; }
+        .stock-level { font-family: 'Orbitron', sans-serif; font-weight: 700; }
+    </style>
+</head>
+<body>
+    
+    <div class="animated-background"></div> 
+    <header>
+        <div class="logo">Gestion.Pro</div>
+        <div class="hamburger" id="hamburger-menu"><span></span><span></span><span></span></div>
+    </header>
+
+    <div class="sidebar" id="sidebar-nav">
+        <nav>
+            <ul>
+                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="inventario.html">Inventario</a></li> 
+                <li><a href="perfil.html">Perfil</a></li> 
+                <li><a href="ajustes.html">Ajustes</a></li>
+                <li><a href="reportes.html">Reportes</a></li>
+                <li><a href="inicio.html">Cerrar Sesión</a></li> 
+            </ul>
+        </nav>
+    </div>
+
+    <main class="main-content-area">
+        <h1>📦 GESTIÓN DE INVENTARIO (CRUD)</h1>
+        
+        <div class="crud-container">
+            
+            <div class="form-card">
+                <h2 id="form-title">AGREGAR NUEVO PRODUCTO</h2>
+                
+                <form id="product-form">
+                    <input type="hidden" id="product-id" value="">
+                    
+                    <label for="nombre">Nombre del Producto</label>
+                    <input type="text" id="nombre" required>
+
+                    <label for="codigo">Código (SKU)</label>
+                    <input type="text" id="codigo" required> 
+
+                    <label for="stock">Stock (Cantidad)</label>
+                    <input type="number" id="stock" min="0" required>
+
+                    <label for="precio">Precio Unitario ($)</label>
+                    <input type="number" id="precio" step="0.01" min="0" required>
+
+                    <label for="categoria">Categoría</label>
+                    <select id="categoria" required>
+                        <option value="" disabled selected>Selecciona una categoría</option>
+                        <option value="remeras">Remeras</option>
+                        <option value="pantalones">Pantalones</option>
+                        <option value="accesorios">Accesorios</option>
+                    </select>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-action btn-save" id="submit-button">GUARDAR PRODUCTO</button>
+                        <button type="button" class="btn-action btn-cancel" id="cancel-button" style="display: none;">CANCELAR EDICIÓN</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="query-card">
+                <h2>🔍 CONSULTA RÁPIDA DE STOCK</h2>
+                <input type="text" id="query-codigo" placeholder="Ingresa Código (SKU) o Nombre">
+                <button type="button" class="btn-action btn-query" id="query-button">CONSULTAR STOCK</button>
+                
+                <div id="stock-details">
+                    <p>Producto: <span id="detail-nombre" class="stock-level">---</span></p>
+                    <p>Stock Actual: <span id="detail-stock" class="stock-level">---</span></p>
+                    <p>Precio Venta: <span id="detail-precio" class="stock-level">---</span></p>
+                    <p>Categoría: <span id="detail-categoria">---</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h2>Inventario Completo</h2>
+            <div id="status-message"></div>
+            
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th> 
+                        <th>Nombre</th> 
+                        <th>Stock</th>
+                        <th>Precio</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-list">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Declaraciones de Elementos (Mantenidas)
+        const productForm = document.getElementById('product-form');
+        const inventoryList = document.getElementById('inventory-list');
+        const statusMessage = document.getElementById('status-message');
+        const formTitle = document.getElementById('form-title');
+        const submitButton = document.getElementById('submit-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const queryButton = document.getElementById('query-button');
+        const queryCodigoInput = document.getElementById('query-codigo');
+        const stockDetails = document.getElementById('stock-details');
+        
+        // Obtener la variable CSS una sola vez
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+
+        // Función para mostrar mensajes de estado
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = type;
+            statusMessage.style.display = 'block';
+            setTimeout(() => { statusMessage.style.display = 'none'; }, 3000);
+        }
+        
+        // I. READ: Cargar Productos (Tabla)
+        async function loadProducts() {
+            try {
+                const products = await window.api.getProducts(); 
+                inventoryList.innerHTML = '';
+                
+                if (products && products.length > 0) {
+                    products.forEach(product => {
+                        const row = inventoryList.insertRow();
+                        row.dataset.id = product.id;
+                        
+                        row.innerHTML = `
+                            <td>${product.id}</td>
+                            <td>${product.codigo}</td> 
+                            <td>${product.nombre}</td>
+                            <td>${product.stock}</td>
+                            <td>$${parseFloat(product.precio).toFixed(2)}</td>
+                            <td>${product.categoria}</td>
+                            <td>
+                                <button class="btn-table-action btn-edit" onclick="editProduct(${product.id})">Editar</button>
+                                <button class="btn-table-action btn-delete" onclick="deleteProduct(${product.id})">Eliminar</button>
+                            </td>
+                        `;
+                    });
+                } else {
+                    inventoryList.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No hay productos en el inventario.</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+                showStatus('Error de conexión. Verifique la API y el Backend (main.js).', 'error'); 
+            }
+        }
+        
+        // II. CREATE / UPDATE: Manejar Envío del Formulario
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const productData = {
+                id: document.getElementById('product-id').value,
+                nombre: document.getElementById('nombre').value,
+                codigo: document.getElementById('codigo').value,
+                stock: parseInt(document.getElementById('stock').value),
+                precio: parseFloat(document.getElementById('precio').value),
+                categoria: document.getElementById('categoria').value,
+            };
+
+            if (isNaN(productData.stock) || isNaN(productData.precio)) {
+                 showStatus('Stock y Precio deben ser números válidos.', 'error');
+                 return;
+            }
+
+            try {
+                let result;
+                let message;
+                
+                if (productData.id) {
+                    result = await window.api.updateProduct(productData);
+                    message = 'actualizado con éxito.';
+                } else {
+                    result = await window.api.createProduct(productData);
+                    message = 'agregado con éxito.';
+                }
+
+                if (result.success) {
+                    showStatus('Producto ' + message, 'success'); 
+                    productForm.reset(); 
+                    resetFormState(); 
+                    loadProducts(); 
+                } else {
+                    showStatus('Error al procesar el producto: ' + (result.message || 'Fallo desconocido.'), 'error');
+                }
+            } catch (error) {
+                console.error('Error en operación CRUD:', error);
+                showStatus('Ocurrió un error en la aplicación (Verifique terminal de Electron).', 'error');
+            }
+        });
+
+        // III. DELETE: Eliminar Producto
+        window.deleteProduct = async function(id) {
+            if (confirm(`¿Está seguro de que desea eliminar el producto con ID ${id}? Esta acción es irreversible.`)) {
+                try {
+                    const result = await window.api.deleteProduct(id);
+                    
+                    if (result.success) {
+                        showStatus(`Producto ID ${id} eliminado con éxito.`, 'success');
+                        loadProducts();
+                    } else {
+                        showStatus('Error al eliminar el producto: ' + (result.message || 'Fallo desconocido.'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar:', error);
+                    showStatus('Ocurrió un error al intentar eliminar (Fallo IPC).', 'error');
+                }
+            }
+        }
+
+        // IV. EDIT (Cargar datos en el formulario)
+        window.editProduct = async function(id) {
+            try {
+                const product = await window.api.getProductById(id); 
+
+                if (product) {
+                    document.getElementById('product-id').value = product.id;
+                    document.getElementById('nombre').value = product.nombre;
+                    document.getElementById('codigo').value = product.codigo;
+                    document.getElementById('stock').value = product.stock;
+                    document.getElementById('precio').value = parseFloat(product.precio).toFixed(2); 
+                    document.getElementById('categoria').value = product.categoria;
+
+                    formTitle.textContent = 'EDITAR PRODUCTO (ID: ' + product.id + ')';
+                    submitButton.textContent = 'ACTUALIZAR';
+                    cancelButton.style.display = 'inline-block';
+                    editingId = product.id; 
+                    
+                    showStatus(`Cargado producto ID ${id} para edición.`, 'success');
+                } else {
+                    showStatus(`No se encontró el producto con ID ${id}.`, 'error');
+                }
+            } catch (error) {
+                console.error('Error al cargar producto para edición:', error);
+                showStatus('Error al cargar datos del producto (Fallo IPC).', 'error');
+            }
+        }
+        
+        // V. CANCELAR EDICIÓN
+        cancelButton.addEventListener('click', resetFormState);
+
+        function resetFormState() {
+            document.getElementById('product-id').value = '';
+            productForm.reset();
+            formTitle.textContent = 'AGREGAR NUEVO PRODUCTO';
+            submitButton.textContent = 'GUARDAR PRODUCTO';
+            cancelButton.style.display = 'none';
+            editingId = null;
+            stockDetails.style.display = 'none';
+        }
+        
+        // VI. CONSULTA DE STOCK (Busca por Código, Nombre o Categoría y FILTRA la tabla)
+        queryButton.addEventListener('click', async () => {
+            const query = queryCodigoInput.value.trim();
+            stockDetails.style.display = 'none'; // Ocultar detalles por defecto
+            inventoryList.innerHTML = ''; // Limpiar la tabla
+
+            if (!query) {
+                // Si la búsqueda está vacía, recargamos el inventario completo
+                loadProducts();
+                showStatus('Inventario completo cargado.', 'success');
+                return;
+            }
+
+            try {
+                // Llamamos a la función de búsqueda que ahora busca por Código, Nombre o Categoría
+                const foundProduct = await window.api.searchProduct(query); 
+                
+                if (foundProduct) {
+                    // A. Mostrar Detalles en el panel de la derecha
+                    document.getElementById('detail-nombre').textContent = foundProduct.nombre;
+                    document.getElementById('detail-stock').textContent = foundProduct.stock;
+                    document.getElementById('detail-precio').textContent = `$${parseFloat(foundProduct.precio).toFixed(2)}`;
+                    document.getElementById('detail-categoria').textContent = foundProduct.categoria;
+                    
+                    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+                    const stockSpan = document.getElementById('detail-stock');
+                    stockSpan.style.color = (foundProduct.stock < 10) ? '#ff4444' : primaryColor; 
+                    
+                    stockDetails.style.display = 'block';
+                    showStatus('Producto encontrado.', 'success');
+
+                    // B. Mostrar SOLO el producto encontrado en la tabla principal
+                    const row = inventoryList.insertRow();
+                    row.dataset.id = foundProduct.id;
+                    
+                    row.innerHTML = `
+                        <td>${foundProduct.id}</td>
+                        <td>${foundProduct.codigo}</td> 
+                        <td>${foundProduct.nombre}</td>
+                        <td>${foundProduct.stock}</td>
+                        <td>$${parseFloat(foundProduct.precio).toFixed(2)}</td>
+                        <td>${foundProduct.categoria}</td>
+                        <td>
+                            <button class="btn-table-action btn-edit" onclick="editProduct(${foundProduct.id})">Editar</button>
+                            <button class="btn-table-action btn-delete" onclick="deleteProduct(${foundProduct.id})">Eliminar</button>
+                        </td>
+                    `;
+
+                } else {
+                    stockDetails.style.display = 'none';
+                    inventoryList.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ff4444;">Producto no encontrado.</td></tr>';
+                    showStatus('Producto no encontrado por código, nombre o categoría.', 'error');
+                }
+            } catch (error) {
+                console.error('Error en consulta de stock (Backend/DB):', error);
+                stockDetails.style.display = 'none';
+                showStatus('Error de consulta. Verifique la consola de Electron.', 'error');
+            }
+        });
+
+
+        // GESTIÓN DE INICIO Y EVENTOS PRINCIPALES
+        window.addEventListener('load', () => {
+            const hamburger = document.getElementById('hamburger-menu');
+            const sidebar = document.getElementById('sidebar-nav');
+            
+            if (hamburger && sidebar) {
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('is-active');
+                    sidebar.classList.toggle('is-open');
+                });
+                
+                document.addEventListener('click', (event) => {
+                    if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
+                        hamburger.classList.remove('is-active');
+                        sidebar.classList.remove('is-open');
+                    }
+                });
+            }
+            
+            // Iniciar la carga de productos inicial después de que el DOM esté listo
+            loadProducts();
+            
+            document.getElementById('nombre').focus();
+        });
+    </script>
+</body>
+</html>
