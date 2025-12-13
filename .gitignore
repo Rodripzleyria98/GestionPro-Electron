@@ -1,0 +1,17 @@
+# Directorios de Node
+node_modules/
+npm-debug.log
+.DS_Store
+
+# Archivos compilados de Electron y caché
+dist/
+out/
+temp/
+
+# Base de datos (CRÍTICO: No subir la DB que contiene el usuario admin)
+gestionpro.db
+*.sqlite
+*.sqlite3
+
+# Módulos específicos de desarrollo
+.vscode/

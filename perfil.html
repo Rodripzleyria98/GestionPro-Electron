@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion.Pro - Perfil</title>
+    
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+    ">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables CSS para colores futuristas */
+        :root {
+            --bg-color: #0d1117; /* Azul oscuro casi negro */
+            --primary-color: #00e676; /* Verde neón brillante */
+            --secondary-color: #00b0ff; /* Azul cian brillante */
+            --text-color: #e0e0e0; /* Gris claro */
+            --border-color: #30363d; /* Gris oscuro para bordes */
+            --glow-effect: 0 0 8px rgba(0, 230, 118, 0.7); /* Resplandor verde */
+            --box-shadow-focus: 0 0 10px rgba(0, 176, 255, 0.5); /* Sombra azul al enfocar */
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Fondo Animado y Z-Index --- */
+        .animated-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; background-color: var(--bg-color); }
+        body::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, rgba(0, 176, 255, 0.1) 0%, transparent 30%), radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.1) 0%, transparent 30%); pointer-events: none; z-index: -2; }
+        
+        @keyframes moveBackground {
+            from { transform: translate(0, 0) scale(3); }
+            to { transform: translate(-500px, -500px) scale(3); }
+        }
+        .animated-background {
+            animation: moveBackground 60s linear infinite; 
+            transform: scale(3);
+        }
+
+        /* --- Header y Hamburguesa --- */
+        header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
+        .hamburger { width: 30px; height: 20px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; z-index: 12; }
+        .hamburger span { display: block; height: 2px; width: 100%; background: var(--secondary-color); border-radius: 5px; transition: all 0.3s ease-in-out; box-shadow: var(--glow-effect); }
+        .hamburger.is-active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .hamburger.is-active span:nth-child(2) { opacity: 0; }
+        .hamburger.is-active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+        
+        /* --- Sidebar (Menú) --- */
+        .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background-color: var(--bg-color); border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); transition: right 0.4s ease-in-out; padding-top: 80px; z-index: 11; }
+        .sidebar.is-open { right: 0; }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar nav ul li a { display: block; padding: 15px 20px; color: var(--text-color); text-decoration: none; font-size: 1.1em; transition: background-color 0.3s ease, color 0.3s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar nav ul li a:hover { background-color: rgba(0, 230, 118, 0.1); color: var(--primary-color); text-shadow: 0 0 5px rgba(0, 230, 118, 0.5); }
+        
+        /* --- Estilos de la Página de Perfil --- */
+        .main-content-area { 
+            padding: 40px; 
+            flex-grow: 1;
+            overflow-y: auto; 
+        }
+
+        .main-content-area h1 {
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: var(--glow-effect);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* Contenedor del Formulario */
+        .profile-form-container {
+            background-color: #1a1f26; 
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Entradas del Formulario */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .input-group input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+        
+        .input-group input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: var(--box-shadow-focus);
+        }
+
+        .input-group input[disabled] {
+            background-color: #12151a; /* Color más oscuro para campos deshabilitados */
+            color: #777;
+        }
+        
+        /* Botón de Acción */
+        .btn-action {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.2s, box-shadow 0.3s;
+        }
+        .btn-save { 
+            background-color: var(--primary-color); 
+            color: var(--bg-color); 
+            box-shadow: var(--glow-effect); 
+        }
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.9);
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="animated-background"></div> 
+    <header>
+        <div class="logo">Gestion.Pro</div>
+        <div class="hamburger" id="hamburger-menu"><span></span><span></span><span></span></div>
+    </header>
+
+    <div class="sidebar" id="sidebar-nav">
+        <nav>
+            <ul>
+                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="inventario.html">Inventario</a></li> 
+                <li><a href="perfil.html">Perfil</a></li> 
+                <li><a href="ajustes.html">Ajustes</a></li>
+                <li><a href="reportes.html">Reportes</a></li>
+                <li><a href="inicio.html">Cerrar Sesión</a></li> 
+            </ul>
+        </nav>
+    </div>
+
+    <main class="main-content-area">
+        <h1>👤 MI PERFIL DE USUARIO</h1>
+        
+        <div class="profile-form-container" style="max-width: 600px; margin: 0 auto;">
+            <form>
+                <div class="input-group">
+                    <label>ID de Usuario:</label>
+                    <input type="text" value="101" disabled>
+                </div>
+                <div class="input-group">
+                    <label>Nombre de Usuario:</label>
+                    <input type="text" value="admin" disabled>
+                </div>
+                <div class="input-group">
+                    <label>Rol:</label>
+                    <input type="text" value="Administrador" disabled>
+                </div>
+                <div class="input-group" style="margin-top: 30px;">
+                    <label>Nueva Contraseña:</label>
+                    <input type="password" placeholder="Dejar vacío para no cambiar">
+                </div>
+                <div class="input-group">
+                    <label>Confirmar Contraseña:</label>
+                    <input type="password">
+                </div>
+                
+                <button type="submit" class="btn-action btn-save" style="float: right;">ACTUALIZAR PERFIL</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Lógica del Menú Hamburguesa
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.getElementById('sidebar-nav');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('is-active');
+            sidebar.classList.toggle('is-open');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
+                hamburger.classList.remove('is-active');
+                sidebar.classList.remove('is-open');
+            }
+        });
+        
+        // NOTA: Aquí se añadiría la lógica de IPC para obtener los datos del usuario logueado 
+        // (ID, Nombre, Rol) y la lógica para actualizar la contraseña.
+    </script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+    ">
+    
+    <title> GestionPro - Acceso Seguro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables CSS para colores futuristas */
+        :root {
+            --bg-color: #0d1117; /* Azul oscuro casi negro */
+            --primary-color: #00e676; /* Verde neón brillante */
+            --secondary-color: #00b0ff; /* Azul cian brillante */
+            --text-color: #e0e0e0; /* Gris claro */
+            --border-color: #30363d; /* Gris oscuro para bordes */
+            --glow-effect: 0 0 8px rgba(0, 230, 118, 0.7); /* Resplandor verde */
+            --box-shadow-focus: 0 0 10px rgba(0, 176, 255, 0.5); /* Sombra azul al enfocar */
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* Evita barras de desplazamiento */
+        }
+
+        /* Efecto de fondo de partículas sutil */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at top left, rgba(0, 176, 255, 0.1) 0%, transparent 30%),
+                radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: -2; /* CAPA MÁS PROFUNDA */
+        }
+
+        
+        /* ------------------------------------------------ */
+        /* --- CÓDIGO CORREGIDO Y SIMPLIFICADO --- */
+        /* ------------------------------------------------ */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1; /* CAPA MENOS PROFUNDA / MÁS CERCANA */
+            background-color: var(--bg-color); /* Fondo oscuro base */
+            
+            /* Aplicamos el box-shadow directamente al contenedor */
+            box-shadow: 
+                /* Puntos de sombra que simulan las partículas/estrellas */
+                100px 50px 0 0 rgba(255, 255, 255, 0.7),
+                200px 300px 0 0 rgba(0, 176, 255, 0.5),
+                350px 150px 0 0 rgba(0, 230, 118, 0.6),
+                450px 450px 0 0 rgba(255, 255, 255, 0.8),
+                600px 100px 0 0 rgba(0, 176, 255, 0.4),
+                750px 550px 0 0 rgba(255, 255, 255, 0.6),
+                900px 250px 0 0 rgba(0, 230, 118, 0.7),
+                100px 700px 0 0 rgba(255, 255, 255, 0.5),
+                800px 80px 0 0 rgba(0, 230, 118, 0.5),
+                1200px 350px 0 0 rgba(0, 176, 255, 0.6),
+                1000px 900px 0 0 rgba(255, 255, 255, 0.7),
+                1500px 50px 0 0 rgba(0, 230, 118, 0.4),
+                1400px 700px 0 0 rgba(255, 255, 255, 0.6);
+
+            /* Aplicamos la animación de movimiento */
+            animation: moveBackground 60s linear infinite; 
+            transform: scale(3); 
+        }
+        
+        /* Definición de la animación de movimiento */
+        @keyframes moveBackground {
+            from {
+                transform: translate(0, 0) scale(3);
+            }
+            to {
+                transform: translate(-500px, -500px) scale(3); 
+            }
+        }
+        /* Fin del CSS para fondo animado */
+        /* ------------------------------------------------ */
+        
+        /* --- Header y Sidebar (Añadido: No se necesita en Login, pero si se deja, debe funcionar) --- */
+        header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
+        .hamburger { width: 30px; height: 20px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; z-index: 12; }
+        .hamburger span { display: block; height: 2px; width: 100%; background: var(--secondary-color); border-radius: 5px; transition: all 0.3s ease-in-out; box-shadow: var(--glow-effect); }
+        .hamburger.is-active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .hamburger.is-active span:nth-child(2) { opacity: 0; }
+        .hamburger.is-active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+        .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background-color: var(--bg-color); border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); transition: right 0.4s ease-in-out; padding-top: 80px; z-index: 11; }
+        .sidebar.is-open { right: 0; }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar nav ul li a { display: block; padding: 15px 20px; color: var(--text-color); text-decoration: none; font-size: 1.1em; transition: background-color 0.3s ease, color 0.3s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar nav ul li a:hover { background-color: rgba(0, 230, 118, 0.1); color: var(--primary-color); text-shadow: 0 0 5px rgba(0, 230, 118, 0.5); }
+
+
+        /* --- Contenido Principal (Formulario de Login) --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: #1a1f26; /* Fondo más claro para el contenedor */
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: var(--glow-effect), 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, 
+                        transparent 0%, transparent 10%, 
+                        var(--secondary-color) 20%, 
+                        transparent 30%, transparent 40%, 
+                        var(--primary-color) 50%, 
+                        transparent 60%, transparent 70%, 
+                        var(--secondary-color) 80%, 
+                        transparent 90%, transparent 100%);
+            animation: rotateGlow 15s linear infinite;
+            z-index: -1;
+            opacity: 0.2;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        .login-container h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-shadow: var(--glow-effect);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--secondary-color);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .input-group input {
+            width: calc(100% - 20px);
+            padding: 12px 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: var(--box-shadow-focus);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: var(--bg-color); /* Texto oscuro sobre botón brillante */
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            box-shadow: var(--glow-effect);
+        }
+
+        .login-button:hover {
+            background-color: #00ff8c; /* Un poco más claro al pasar el ratón */
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+            box-shadow: var(--glow-effect);
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="animated-background"></div> 
+    
+    <header>
+        <div class="logo">Gestion.Pro</div>
+        <div class="hamburger" id="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar-nav">
+        <nav>
+            <ul>
+                <li><a href="home.html">Home/Dashboard</a></li>
+                <li><a href="inventario.html">Inventario</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="ajustes.html">Ajustes</a></li>
+                <li><a href="#">Reportes</a></li>
+                <li><a href="inicio.html">Salir</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="login-container">
+            <h2>ACCESO AL SISTEMA</h2>
+            <form>
+                <div class="input-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                </div>
+                <button type="submit" class="login-button">INGRESAR</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // JavaScript para el menú hamburguesa (Mantenido, aunque no debería usarse aquí)
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.getElementById('sidebar-nav');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('is-active');
+            sidebar.classList.toggle('is-open');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
+                hamburger.classList.remove('is-active');
+                sidebar.classList.remove('is-open');
+            }
+        });
+        
+        // ----------------------------------------------------
+        // 🚨 LÓGICA CLAVE: MANEJO DEL FORMULARIO DE INICIO DE SESIÓN
+        // ----------------------------------------------------
+        
+        const loginForm = document.querySelector('form');
+        
+        // Asume que window.api.login existe (definido en preload.js)
+        if (typeof window.api !== 'undefined' && typeof window.api.login === 'function') {
+        
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Detiene el envío normal del formulario
+        
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+        
+                try {
+                    // Llamada IPC al backend
+                    const result = await window.api.login(username, password);
+        
+                    if (result.success) {
+                        alert(`¡Bienvenido, ${result.user.username}! Redirigiendo al Home.`);
+                        // 🚨 CORRECCIÓN 2: Redirigir a la página principal de gestión
+                        window.location.href = 'home.html'; 
+                    } else {
+                        // Muestra el mensaje de error si las credenciales son incorrectas
+                        alert('Error de inicio de sesión: ' + result.message);
+                    }
+                } catch (error) {
+                    // Muestra el error de conexión si el backend (preload/main) falla
+                    console.error("Error IPC/Conexión: Falló la comunicación con el proceso principal.", error);
+                    alert("Error de conexión. Asegúrate de que Electron está configurado correctamente.");
+                }
+            });
+            
+        } else {
+            // Muestra una advertencia si la API segura no se cargó
+            console.error("Advertencia: La API de Electron (window.api) no está disponible. ¿preload.js está cargado?");
+        }
+    </script>
+</body>
+</html>

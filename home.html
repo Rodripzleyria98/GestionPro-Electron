@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion.Pro - Home Principal</title>
+    
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+    ">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables CSS para colores futuristas */
+        :root {
+            --bg-color: #0d1117; /* Azul oscuro casi negro */
+            --primary-color: #00e676; /* Verde neón brillante */
+            --secondary-color: #00b0ff; /* Azul cian brillante */
+            --text-color: #e0e0e0; /* Gris claro */
+            --border-color: #30363d; /* Gris oscuro para bordes */
+            --glow-effect: 0 0 8px rgba(0, 230, 118, 0.7); /* Resplandor verde */
+            --box-shadow-focus: 0 0 10px rgba(0, 176, 255, 0.5); /* Sombra azul al enfocar */
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Fondo Animado y Z-Index --- */
+        .animated-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; background-color: var(--bg-color); }
+        body::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, rgba(0, 176, 255, 0.1) 0%, transparent 30%), radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.1) 0%, transparent 30%); pointer-events: none; z-index: -2; }
+        
+        @keyframes moveBackground {
+            from { transform: translate(0, 0) scale(3); }
+            to { transform: translate(-500px, -500px) scale(3); }
+        }
+        .animated-background {
+            animation: moveBackground 60s linear infinite; 
+            transform: scale(3);
+        }
+
+        /* --- Header y Hamburguesa (Necesario para el Menú) --- */
+        header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
+        .hamburger { width: 30px; height: 20px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; z-index: 12; }
+        .hamburger span { display: block; height: 2px; width: 100%; background: var(--secondary-color); border-radius: 5px; transition: all 0.3s ease-in-out; box-shadow: var(--glow-effect); }
+        .hamburger.is-active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .hamburger.is-active span:nth-child(2) { opacity: 0; }
+        .hamburger.is-active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+        
+        /* --- Sidebar (Menú) --- */
+        .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background-color: var(--bg-color); border-left: 1px solid var(--border-color); box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); transition: right 0.4s ease-in-out; padding-top: 80px; z-index: 11; }
+        .sidebar.is-open { right: 0; }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar nav ul li a { display: block; padding: 15px 20px; color: var(--text-color); text-decoration: none; font-size: 1.1em; transition: background-color 0.3s ease, color 0.3s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar nav ul li a:hover { background-color: rgba(0, 230, 118, 0.1); color: var(--primary-color); text-shadow: 0 0 5px rgba(0, 230, 118, 0.5); }
+        
+        /* --- Contenido Principal y Estilos del Dashboard --- */
+        .main-content-area { 
+            padding: 40px; 
+            flex-grow: 1;
+            overflow-y: auto; 
+        }
+
+        .main-content-area h1 {
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: var(--glow-effect);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* --- KPI Grid (Fila de Métricas) --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background-color: #1a1f26; 
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .kpi-card h2 {
+            font-size: 1.1em;
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .kpi-card .value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2em;
+            color: var(--primary-color);
+            text-shadow: var(--glow-effect);
+            margin: 5px 0;
+        }
+        
+        .kpi-card.alert {
+            border-color: #ff4444; 
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
+        }
+        
+        /* --- Management Grid (Acciones) --- */
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .action-card {
+            display: block;
+            text-decoration: none;
+            background-color: #1a1f26; 
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            color: var(--text-color);
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .action-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5em;
+            margin-top: 0;
+        }
+        
+        .action-card.neon-green { border-left: 5px solid var(--primary-color); }
+        .action-card.neon-green h3 { color: var(--primary-color); text-shadow: var(--glow-effect); }
+
+        .action-card.neon-blue { border-left: 5px solid #00b0ff; }
+        .action-card.neon-blue h3 { color: #00b0ff; text-shadow: 0 0 8px rgba(0, 176, 255, 0.7); }
+        
+        .action-card.neon-cyan { border-left: 5px solid #33ffc4; }
+        .action-card.neon-cyan h3 { color: #33ffc4; text-shadow: 0 0 8px rgba(51, 255, 196, 0.7); }
+        
+        .action-card.neon-purple { border-left: 5px solid #b388ff; }
+        .action-card.neon-purple h3 { color: #b388ff; text-shadow: 0 0 8px rgba(179, 136, 255, 0.7); }
+        
+        /* --- Estilos de la Tabla (Mantenidos, aunque ocultaremos la tabla de usuarios en Home) --- */
+        #users-table-container { display: none; } /* Ocultamos la tabla de usuarios en la vista principal */
+    </style>
+</head>
+<body>
+    
+    <div class="animated-background"></div> 
+    
+    <header>
+        <div class="logo">Gestion.Pro</div>
+        <div class="hamburger" id="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar-nav">
+        <nav>
+            <ul>
+                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="inventario.html">Inventario</a></li> 
+                <li><a href="perfil.html">Perfil</a></li> 
+                <li><a href="ajustes.html">Ajustes</a></li>
+                <li><a href="#">Reportes</a></li>
+                <li><a href="inicio.html">Cerrar Sesión</a></li> 
+            </ul>
+        </nav>
+    </div>
+
+    <main class="main-content-area">
+        <h1>🚀 PANEL DE CONTROL PRINCIPAL</h1>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h2>Ventas del Día</h2>
+                <p class="value">$ 4,500.00</p>
+                <small>+5% vs Ayer</small>
+            </div>
+            <div class="kpi-card alert">
+                <h2>Stock Crítico</h2>
+                <p class="value">28</p>
+                <small>Artículos agotándose</small>
+            </div>
+            <div class="kpi-card">
+                <h2>Clientes (30 días)</h2>
+                <p class="value">150</p>
+                <small>Ver reporte completo</small>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 40px;">GESTIÓN RÁPIDA DE TIENDA</h2>
+        
+        <div class="management-grid">
+            
+            <a href="inventario.html" class="action-card neon-green">
+                <h3>📦 Inventario y Productos</h3>
+                <p>Agregar, editar y eliminar artículos de ropa.</p>
+            </a>
+
+            <a href="#" class="action-card neon-blue">
+                <h3>🛒 Punto de Venta (POS)</h3>
+                <p>Registrar ventas y transacciones diarias.</p>
+            </a>
+
+            <a href="#" class="action-card neon-cyan">
+                <h3>👤 Gestión de Clientes</h3>
+                <p>Administrar historial y datos de clientes.</p>
+            </a>
+            
+            <a href="#" class="action-card neon-purple">
+                <h3>📊 Reportes Financieros</h3>
+                <p>Ver ganancias, pérdidas e informes de inventario.</p>
+            </a>
+        </div>
+        
+        <div id="users-table-container">
+            </div>
+    </main>
+
+    <script>
+        // JavaScript para el menú hamburguesa
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.getElementById('sidebar-nav');
+
+        // Lógica para abrir/cerrar el menú
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('is-active');
+            sidebar.classList.toggle('is-open');
+        });
+        
+        // Lógica para cerrar el menú al hacer clic fuera
+        document.addEventListener('click', (event) => {
+            if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
+                hamburger.classList.remove('is-active');
+                sidebar.classList.remove('is-open');
+            }
+        });
+        
+        // NOTA: La lógica de carga de usuarios (window.api.getUsers) debe ir aquí si la vuelves a usar.
+        // Se omite en este Home para mantenerlo limpio de datos, pero puedes añadirla si quieres que la tabla aparezca.
+
+    </script>
+</body>
+</html>
