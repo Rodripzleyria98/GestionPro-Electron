@@ -1,4 +1,4 @@
-// backend/database.js - VERSIÓN FINAL CON GESTIÓN DE VENTAS
+// backend/database.js 
 
 const Database = require('better-sqlite3');
 const path = require('path');
@@ -58,7 +58,6 @@ function initDb(appPath) {
         )
     `);
 
-    // 🚨 NUEVA TABLA: VENTAS
     db.exec(`
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,8 +67,6 @@ function initDb(appPath) {
             -- Almacenamos los detalles de los productos vendidos como JSON
         )
     `);
-
-
     // Inserción de Admin (si no existe)
     const checkUser = db.prepare('SELECT COUNT(*) FROM users WHERE username = ?');
     if (checkUser.get('admin')['COUNT(*)'] === 0) {
@@ -92,7 +89,20 @@ function getAllUsers() {
     const stmt = db.prepare('SELECT id, username, role FROM users');
     return stmt.all(); 
 }
-
+function createUser(username, password, role = 'vendedor') {
+    if (!db) return { success: false, message: "DB no inicializada." };
+    try {
+        const stmt = db.prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+        const info = stmt.run(username, password, role);
+        return { success: true, id: info.lastInsertRowid };
+    } catch (error) {
+        let msg = error.message;
+        if (msg.includes('UNIQUE constraint failed: users.username')) {
+             msg = 'El nombre de usuario ya existe.';
+        }
+        return { success: false, message: msg };
+    }
+}
 // CRUD PRODUCTOS
 function createProduct(nombre, codigo, stock, precio, categoria) {
     if (!db) return { success: false, message: "DB no inicializada." };
@@ -117,8 +127,6 @@ function getProducts() {
         return [];
     }
 }
-// NOTA: getProductById se movió como función interna para usarla en processSale
-
 function updateProduct(id, nombre, codigo, stock, precio, categoria) {
     if (!db) return { success: false, message: "DB no inicializada." };
     try {
@@ -162,7 +170,7 @@ function searchProduct(query) {
 }
 
 
-// 🚨 MÓDULO DE VENTAS Y STOCK
+// MÓDULO DE VENTAS Y STOCK
 function processSale(saleData) {
     if (!db) return { success: false, message: "DB no inicializada." };
     
@@ -214,8 +222,48 @@ function processSale(saleData) {
         return transaction(); // Ejecutar la transacción
     } catch (error) {
         console.error("Error al procesar la venta:", error.message);
-        // El error del throw de la transacción se captura aquí
         return { success: false, message: error.message };
+    }
+}
+// Función para obtener las ventas totales de hoy
+function getDailySales() {
+    if (!db) return 0;
+    try {
+        // Obtener la fecha de hoy en formato ISO (YYYY-MM-DD)
+        const today = new Date().toISOString().slice(0, 10);
+        const startOfDay = `${today}T00:00:00.000Z`;
+        const endOfDay = `${today}T23:59:59.999Z`;
+
+        // Consulta para sumar el total de ventas registradas hoy
+        const stmt = db.prepare(`
+            SELECT SUM(total) AS total_sales 
+            FROM ventas 
+            WHERE fecha >= ? AND fecha <= ?
+        `);
+        const result = stmt.get(startOfDay, endOfDay);
+        // Devuelve el total o 0 si es nulo
+        return result.total_sales || 0; 
+    } catch (error) {
+        console.error("Error al obtener ventas del día:", error);
+        return 0;
+    }
+}
+
+// Función para contar productos con stock bajo (crítico)
+function getCriticalStockCount(threshold = 10) {
+    if (!db) return 0;
+    try {
+        // Contar productos donde el stock es menor o igual al umbral
+        const stmt = db.prepare(`
+            SELECT COUNT(*) AS critical_count 
+            FROM productos 
+            WHERE stock <= ?
+        `);
+        const result = stmt.get(threshold);
+        return result.critical_count || 0;
+    } catch (error) {
+        console.error("Error al obtener stock crítico:", error);
+        return 0;
     }
 }
 
@@ -224,6 +272,7 @@ module.exports = {
     initDb, 
     verifyUser,
     getAllUsers, 
+    createUser,
     // CRUD Productos
     createProduct,
     getProducts,
@@ -231,5 +280,7 @@ module.exports = {
     updateProduct,
     deleteProduct,
     searchProduct,
-    processSale 
+    processSale,
+    getDailySales,
+    getCriticalStockCount
 };

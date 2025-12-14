@@ -38,19 +38,6 @@
             overflow: hidden;
         }
 
-        /* --- Fondo Animado y Z-Index --- */
-        .animated-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; background-color: var(--bg-color); }
-        body::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, rgba(0, 176, 255, 0.1) 0%, transparent 30%), radial-gradient(circle at bottom right, rgba(0, 230, 118, 0.1) 0%, transparent 30%); pointer-events: none; z-index: -2; }
-        
-        @keyframes moveBackground {
-            from { transform: translate(0, 0) scale(3); }
-            to { transform: translate(-500px, -500px) scale(3); }
-        }
-        .animated-background {
-            animation: moveBackground 60s linear infinite; 
-            transform: scale(3);
-        }
-
         /* --- Header y Hamburguesa (Necesario para el Menú) --- */
         header { background-color: var(--bg-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); z-index: 10; }
         .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary-color); text-shadow: var(--glow-effect); user-select: none; }
@@ -176,7 +163,7 @@
             font-size: 0.9em;
             text-align: left;
             margin-top: 15px;
-            width: 100%; /* Asegurar que la tabla ocupe todo el espacio */
+            width: 100%;
         }
 
         #users-table thead tr {
@@ -230,24 +217,8 @@
     </div>
 
     <main class="main-content-area">
-        <h1>🚀 PANEL DE CONTROL PRINCIPAL</h1>
-        
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <h2>Ventas del Día</h2>
-                <p class="value">$ 4,500.00</p>
-                <small>+5% vs Ayer</small>
-            </div>
-            <div class="kpi-card alert">
-                <h2>Stock Crítico</h2>
-                <p class="value">28</p>
-                <small>Artículos agotándose</small>
-            </div>
-            
-        </div>
-
+        <h1>🚀 PANEL DE CONTROL PRINCIPAL</h1> 
         <h2 style="margin-top: 40px;">GESTIÓN RÁPIDA DE TIENDA</h2>
-        
         <div class="management-grid">
             
             <a href="inventario.html" class="action-card neon-green">
@@ -259,37 +230,38 @@
                 <h3>🛒 Ventas</h3>
                 <p>Registrar ventas y transacciones diarias.</p>
             </a>
-
-
-            
             <a href="reportes.html" class="action-card neon-purple"> 
                 <h3>📊 Reportes Financieros</h3>
                 <p>Ver ganancias, pérdidas e informes de inventario.</p>
             </a>
         </div>
         
-        <h2 style="margin-top: 60px;">ADMINISTRACIÓN DE USUARIOS</h2>
-        <div id="users-table-container">
-            <table id="users-table" width="100%">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Rol</th>
-                    </tr>
-                </thead>
-                <tbody id="users-table-body">
-                    </tbody>
-            </table>
-            <p id="loading-message">Cargando usuarios...</p>
-        </div>
+       <h2 style="margin-top: 60px;">ADMINISTRACIÓN DE USUARIOS</h2>
+        
+        <a href="registro_usuarios.html" class="action-card neon-cyan" style="display: block; width: 250px; margin-bottom: 20px; padding: 10px; text-align: center; text-decoration: none; background: #33ffc420; border: 1px solid #33ffc4;">
+            + Registrar Nuevo Usuario
+        </a>
+        
+        <div id="users-table-container">
+            <table id="users-table" width="100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    </tbody>
+            </table>
+            <p id="loading-message">Cargando usuarios...</p>
+        </div>
     </main>
-
     <script>
         // JavaScript para el menú hamburguesa
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.getElementById('sidebar-nav');
-        const usersTableBody = document.getElementById('users-table-body'); // Nuevo ID para el tbody
+        const usersTableBody = document.getElementById('users-table-body'); 
         const loadingMessage = document.getElementById('loading-message');
 
         hamburger.addEventListener('click', () => {

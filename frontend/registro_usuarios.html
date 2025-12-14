@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion.Pro - Registro de Usuarios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet"/>
+    <style>
+        /* CSS necesario para el estilo neon */
+        :root {
+            --bg-color: #0d1117;
+            --primary-color: #00e676; 
+            --secondary-color: #00b0ff;
+            --text-color: #e0e0e0; 
+            --border-color: #30363d;
+            --glow-effect: 0 0 8px rgba(0, 230, 118, 0.7); 
+        }
+        body { font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; background: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; }
+        .main-content-area { padding: 40px; flex-grow: 1; overflow-y: auto; text-align: center; }
+        .main-content-area h1 { color: var(--primary-color); font-family: 'Orbitron', sans-serif; text-shadow: var(--glow-effect); border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px; max-width: 600px; margin: 0 auto 30px; }
+        .form-container { background: #1a1f26; padding: 30px; border-radius: 10px; border: 1px solid var(--border-color); max-width: 400px; margin: 50px auto; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); }
+        .form-container input, .form-container select { width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); border-radius: 5px; }
+        .form-container button { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; background-color: var(--secondary-color); color: var(--bg-color); width: 100%; }
+        .form-container button:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <main class="main-content-area">
+        <h1>👤 REGISTRO DE NUEVO USUARIO</h1>
+        <div class="form-container">
+            <input type="text" id="username" placeholder="Nombre de Usuario" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <select id="role">
+                <option value="vendedor">Vendedor</option>
+                <option value="administrator">Administrador</option>
+            </select>
+            <button id="register-btn">Registrar Usuario</button>
+            <p id="message" style="margin-top: 15px;"></p>
+        </div>
+        <a href="home.html" style="color: var(--secondary-color); text-decoration: none;">← Volver al Dashboard</a>
+    </main>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const roleInput = document.getElementById('role');
+        const registerBtn = document.getElementById('register-btn');
+        const message = document.getElementById('message');
+
+        registerBtn.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            const role = roleInput.value;
+
+            if (!username || !password) {
+                message.textContent = 'Por favor, completa todos los campos.';
+                message.style.color = '#ff4444';
+                return;
+            }
+
+            try {
+                const userData = { username, password, role };
+                // Llamamos a la nueva función IPC
+                const result = await window.api.createUser(userData);
+
+                if (result.success) {
+                    message.textContent = `Usuario ${username} (${role}) registrado con éxito.`;
+                    message.style.color = 'var(--primary-color)';
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                } else {
+                    message.textContent = `Error: ${result.message}`;
+                    message.style.color = '#ff4444';
+                }
+            } catch (error) {
+                message.textContent = 'Error de comunicación IPC al registrar.';
+                message.style.color = '#ff4444';
+                console.error("Error IPC al registrar usuario:", error);
+            }
+        });
+    </script>
+</body>
+</html>

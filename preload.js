@@ -1,4 +1,4 @@
-// preload.js - VERSIÓN FINAL CON GESTIÓN DE VENTAS
+// preload.js 
 
 const { contextBridge, ipcRenderer } = require('electron');
 
@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('api', {
     // AUTH
     login: (username, password) => ipcRenderer.invoke('user:login', username, password),
     getUsers: () => ipcRenderer.invoke('db:getUsers'), 
+    createUser: (userData) => ipcRenderer.invoke('user:create', userData),
     
     // MÓDULO DE INVENTARIO (CRUD y Búsqueda)
     createProduct: (productData) => ipcRenderer.invoke('create-product', productData),
@@ -15,6 +16,10 @@ contextBridge.exposeInMainWorld('api', {
     deleteProduct: (id) => ipcRenderer.invoke('delete-product', id),
     searchProduct: (query) => ipcRenderer.invoke('search-product', query),
     
-    // PROCESAR VENTA
+    // MÓDULO DE VENTAS
     processSale: (saleData) => ipcRenderer.invoke('process-sale', saleData),
+
+    // FUNCIONES KPI
+    getDailySales: () => ipcRenderer.invoke('get-daily-sales'),
+    getCriticalStockCount: () => ipcRenderer.invoke('get-critical-stock-count'),
 });

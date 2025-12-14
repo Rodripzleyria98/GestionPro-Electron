@@ -137,11 +137,9 @@
     <div class="sidebar" id="sidebar-nav">
         <nav>
             <ul>
-                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="home.html">Home</a></li> 
                 <li><a href="inventario.html">Inventario</a></li> 
-                
                 <li><a href="ventas.html">Gestión de Ventas</a></li> 
-                
                 <li><a href="perfil.html">Perfil</a></li> 
                 <li><a href="ajustes.html">Ajustes</a></li>
                 <li><a href="reportes.html">Reportes</a></li>
@@ -471,4 +469,20 @@
         });
     </script>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const userRole = sessionStorage.getItem('userRole');
+
+        // Roles permitidos: Solo el administrador
+        if (userRole !== 'administrator') {
+            alert('Acceso Denegado. Solo los administradores pueden gestionar el inventario.');
+            window.location.href = 'home.html'; 
+            return;
+        }
+
+        // Si es administrador, la lógica normal de la página de Inventario continuaría aquí.
+        // Por ahora, solo confirmamos el acceso.
+        console.log('Acceso a Inventario concedido al rol:', userRole);
+    });
+</script>
 </html>

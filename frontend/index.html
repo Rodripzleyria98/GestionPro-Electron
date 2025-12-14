@@ -53,10 +53,6 @@
             pointer-events: none;
             z-index: -2; /* CAPA MÁS PROFUNDA */
         }
-
-        
-        /* ------------------------------------------------ */
-        /* --- CÓDIGO CORREGIDO Y SIMPLIFICADO --- */
         /* ------------------------------------------------ */
         .animated-background {
             position: fixed;
@@ -99,7 +95,6 @@
                 transform: translate(-500px, -500px) scale(3); 
             }
         }
-        /* Fin del CSS para fondo animado */
         /* ------------------------------------------------ */
         
         /* --- Header y Sidebar (Añadido: No se necesita en Login, pero si se deja, debe funcionar) --- */
@@ -230,72 +225,57 @@
     </style>
 </head>
 <body>
-    
-    <div class="animated-background"></div> 
-    
-    <header>
-        <div class="logo">Gestion.Pro</div>
-        <div class="hamburger" id="hamburger-menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    </header>
-
-    <div class="sidebar" id="sidebar-nav">
-        <nav>
-            <ul>
-                <li><a href="home.html">Home/Dashboard</a></li>
-                <li><a href="inventario.html">Inventario</a></li>
-                <li><a href="perfil.html">Perfil</a></li>
-                <li><a href="ajustes.html">Ajustes</a></li>
-                <li><a href="#">Reportes</a></li>
-                <li><a href="inicio.html">Salir</a></li>
-            </ul>
-        </nav>
+   <main class="main-content">
+    <div class="login-container">
+        <h2>ACCESO AL SISTEMA</h2>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+            </div>
+            <button type="submit" class="login-button">INGRESAR</button>
+            <p id="message"></p>
+        </form>
     </div>
-
-    <main class="main-content">
-        <div class="login-container">
-            <h2>ACCESO AL SISTEMA</h2>
-            <form>
-                <div class="input-group">
-                    <label for="username">Usuario:</label>
-                    <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
-                </div>
-                <div class="input-group">
-                    <label for="password">Contraseña:</label>
-                    <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
-                </div>
-                <button type="submit" class="login-button">INGRESAR</button>
-            </form>
-        </div>
-    </main>
+</main>
 
     <script>
-        // JavaScript para el menú hamburguesa (Mantenido, aunque no debería usarse aquí)
+    // Variables globales para el manejo del formulario
+    const loginForm = document.getElementById('login-form');
+    const message = document.getElementById('message');
+
+    // Función que se ejecuta cuando el DOM está listo
+    document.addEventListener('DOMContentLoaded', () => {
+        // Lógica del menú hamburguesa (generalmente no necesaria en la pantalla de login, pero mantenida si el HTML la incluye)
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.getElementById('sidebar-nav');
 
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('is-active');
-            sidebar.classList.toggle('is-open');
-        });
+        if (hamburger && sidebar) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('is-active');
+                sidebar.classList.toggle('is-open');
+            });
 
-        document.addEventListener('click', (event) => {
-            if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
-                hamburger.classList.remove('is-active');
-                sidebar.classList.remove('is-open');
-            }
-        });
-        //  INICIO DE SESIÓN
-        const loginForm = document.querySelector('form');
+            document.addEventListener('click', (event) => {
+                if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains('is-open')) {
+                    hamburger.classList.remove('is-active');
+                    sidebar.classList.remove('is-open');
+                }
+            });
+        }
         
-        // Asume que window.api.login existe (definido en preload.js)
+        // --- LÓGICA PRINCIPAL DE INICIO DE SESIÓN ---
+        
+        // 1. Verificar si la API de Electron está disponible
         if (typeof window.api !== 'undefined' && typeof window.api.login === 'function') {
         
             loginForm.addEventListener('submit', async (event) => {
                 event.preventDefault(); // Detiene el envío normal del formulario
+                message.textContent = ''; // Limpiar mensajes previos
         
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
@@ -305,24 +285,39 @@
                     const result = await window.api.login(username, password);
         
                     if (result.success) {
-                        alert(`¡Bienvenido, ${result.user.username}! Redirigiendo al Home.`);
-                        // 🚨 CORRECCIÓN 2: Redirigir a la página principal de gestión
-                        window.location.href = 'home.html'; 
+                        
+                        //CLAVE DE ROLES: GUARDAR ROL Y ID EN SESIÓN
+                        sessionStorage.setItem('userId', result.user.id);
+                        sessionStorage.setItem('userRole', result.user.role); 
+                        
+                        message.textContent = `¡Bienvenido, ${result.user.username} (${result.user.role})! Redirigiendo...`;
+                        message.style.color = 'var(--primary-color)';
+
+                        // Redirigir a la página principal de gestión
+                        setTimeout(() => {
+                            window.location.href = 'home.html'; 
+                        }, 500);
+
                     } else {
                         // Muestra el mensaje de error si las credenciales son incorrectas
-                        alert('Error de inicio de sesión: ' + result.message);
+                        message.textContent = result.message || 'Credenciales inválidas.';
+                        message.style.color = '#ff4444';
                     }
                 } catch (error) {
                     // Muestra el error de conexión si el backend (preload/main) falla
                     console.error("Error IPC/Conexión: Falló la comunicación con el proceso principal.", error);
-                    alert("Error de conexión. Asegúrate de que Electron está configurado correctamente.");
+                    message.textContent = "Error de conexión. Asegúrate de que Electron está configurado correctamente.";
+                    message.style.color = '#ff4444';
                 }
             });
             
         } else {
-            // Muestra una advertencia si la API segura no se cargó
+            // 2. Manejo de error si la API de Electron no se cargó
+            message.textContent = "Error: El sistema no pudo cargar la API de comunicación. (Verifique preload.js)";
+            message.style.color = '#ff4444';
             console.error("Advertencia: La API de Electron (window.api) no está disponible. ¿preload.js está cargado?");
         }
-    </script>
+    });
+</script>
 </body>
 </html>

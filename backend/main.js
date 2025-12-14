@@ -1,4 +1,4 @@
-// backend/main.js - VERSIÓN FINAL CON GESTIÓN DE VENTAS
+// backend/main.js 
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
@@ -24,9 +24,6 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-
-// 2. MANEJADORES IPC (Proceso Principal)
-
 // AUTH: Maneja el Login
 ipcMain.handle('user:login', (event, username, password) => {
     const user = db.verifyUser(username, password);
@@ -37,7 +34,10 @@ ipcMain.handle('user:login', (event, username, password) => {
         return { success: false, message: 'Credenciales inválidas.' };
     }
 });
-
+ipcMain.handle('user:create', (event, userData) => {
+    
+    return db.createUser(userData.username, userData.password, userData.role);
+});
 // READ: Obtener Usuarios
 ipcMain.handle('db:getUsers', async () => {
     try {
@@ -49,7 +49,8 @@ ipcMain.handle('db:getUsers', async () => {
     }
 });
 
-// --- CRUD PRODUCTOS ---
+// --- CRUD PRODUCTOS / INVENTARIO ---
+
 ipcMain.handle('create-product', (event, productData) => {
     return db.createProduct(productData.nombre, productData.codigo, productData.stock, productData.precio, productData.categoria);
 });
@@ -69,9 +70,20 @@ ipcMain.handle('search-product', (event, query) => {
     return db.searchProduct(query);
 });
 
-// 🚨 NUEVO MANEJADOR: PROCESAR VENTA
+// --- MÓDULO DE VENTAS Y KPI ---
+
+// PROCESAR VENTA
 ipcMain.handle('process-sale', (event, saleData) => {
     return db.processSale(saleData);
+});
+
+// NUEVOS MANEJADORES KPI PARA DASHBOARD
+ipcMain.handle('get-daily-sales', () => {
+    return db.getDailySales();
+});
+
+ipcMain.handle('get-critical-stock-count', () => {
+    return db.getCriticalStockCount();
 });
 
 

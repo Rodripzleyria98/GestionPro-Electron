@@ -163,11 +163,9 @@
     <div class="sidebar" id="sidebar-nav">
         <nav>
             <ul>
-                <li><a href="home.html">Home/Dashboard</a></li> 
+                <li><a href="home.html">Home</a></li> 
                 <li><a href="inventario.html">Inventario</a></li> 
-                
                 <li><a href="ventas.html">Gestión de Ventas</a></li> 
-                
                 <li><a href="perfil.html">Perfil</a></li> 
                 <li><a href="ajustes.html">Ajustes</a></li>
                 <li><a href="reportes.html">Reportes</a></li>
@@ -385,4 +383,20 @@
         });
     </script>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const userRole = sessionStorage.getItem('userRole');
+
+        // Roles permitidos: Administrador O Vendedor
+        if (userRole !== 'administrator' && userRole !== 'vendedor') {
+            // Si no tiene el rol, forzar la salida
+            alert('Acceso Denegado. Debes iniciar sesión con un rol válido.');
+            window.location.href = 'inicio.html'; 
+            return;
+        }
+
+        // Si tiene el rol, la lógica normal de la página de Ventas continuaría aquí.
+        console.log('Acceso a Ventas concedido al rol:', userRole);
+    });
+</script>
 </html>
